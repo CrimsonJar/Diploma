@@ -30,13 +30,26 @@ export const fetchItems = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
+  },
+  {
+    condition: ({ categoryId, offset, query }, { getState }) => {
+      const { items } = getState();
+      // Проверяем, загружены ли уже данные для данной категории и смещения
+      const alreadyLoaded = items.items.some(
+        (item) =>
+          item.categoryId === categoryId &&
+          item.offset === offset &&
+          item.query === query
+      );
+      return !alreadyLoaded; // Выполнять запрос только если данные еще не загружены
+    },
   }
 );
 
 export const fetchItemsByCategory = createAsyncThunk(
   "items/fetchItemsByCategory",
   async (categoryId, { getState, rejectWithValue }) => {
-    const state = getState();
+    const state = getState(); // Получаем текущее состояние
     const limit = state.items.limit; // лимит загрузки элементов
     let url = `http://localhost:7070/api/items`;
     const params = new URLSearchParams();
@@ -59,6 +72,17 @@ export const fetchItemsByCategory = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
+  },
+  {
+    condition: (categoryId, { getState }) => {
+      const state = getState(); // Получаем текущее состояние
+      const { items } = state;
+      // Проверяем, загружены ли уже данные для данной категории
+      const alreadyLoaded = items.items.some(
+        (item) => item.categoryId === categoryId
+      );
+      return !alreadyLoaded; // Выполнять запрос только если данные еще не загружены
+    },
   }
 );
 
@@ -105,15 +129,15 @@ const itemsSlice = createSlice({
         state.isLoading = true;
       })
       .addCase(fetchItems.fulfilled, (state, action) => {
-        state.status = "succeeded";
-        if (state.offset === 0) {
-          state.items = action.payload; // Первая загрузка, заменяем элементы
-        } else {
-          state.items = [...state.items, ...action.payload]; // Дальнейшая загрузка, добавляем элементы
-        }
+        state.status = "succeeded"; // Если offset равен 0, заменяем элементы, иначе добавляем новые элементы к существующим
+        state.items =
+          state.offset === 0
+            ? action.payload
+            : [...state.items, ...action.payload];
         state.hasMoreItems = action.payload.length === state.limit;
         state.isLoading = false;
-        state.isInitialLoadCompleted = true; // Устанавливаем в true для всех успешных загрузок
+        state.isInitialLoadCompleted = true;
+        state.error = null; // Сброс ошибки после успешной загрузки
       })
       .addCase(fetchItems.rejected, (state, action) => {
         state.status = "failed";
@@ -128,11 +152,12 @@ const itemsSlice = createSlice({
       })
       .addCase(fetchItemsByCategory.fulfilled, (state, action) => {
         state.status = "succeeded";
-        state.items = action.payload; // Загрузка по категории, заменяем элементы
+        state.items = action.payload;
         state.hasMoreItems = action.payload.length === state.limit;
         state.isLoading = false;
-        state.isInitialLoadCompleted = true; // Устанавливаем в true для всех успешных загрузок
+        state.isInitialLoadCompleted = true;
         state.activeCategoryId = action.meta.arg;
+        state.error = null; // Сброс ошибки после успешной загрузки по категории
       })
       .addCase(fetchItemsByCategory.rejected, (state, action) => {
         state.status = "failed";

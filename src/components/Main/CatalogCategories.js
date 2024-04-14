@@ -1,5 +1,5 @@
 // CatalogCategories.js
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCategories } from "../../Slice/categoriesSlice";
 import {
@@ -15,6 +15,28 @@ const CatalogCategories = () => {
   const { items, status } = useSelector((state) => state.categories);
   const activeCategoryId = useSelector((state) => state.items.activeCategoryId);
   const searchQuery = useSelector((state) => state.items.searchQuery);
+  const [retryCount, setRetryCount] = useState(0);
+  const error = useSelector((state) => state.items.error);
+  const offset = useSelector((state) => state.items.offset);
+  // Обработчик повторного запроса
+  const handleRetry = () => {
+    dispatch(
+      fetchItems({
+        categoryId: Number(activeCategoryId) || 0,
+        offset: offset,
+        query: searchQuery,
+      })
+    );
+  };
+
+  useEffect(() => {
+    if (status === "failed" && retryCount < 30) {
+      setTimeout(() => {
+        dispatch(fetchCategories());
+        setRetryCount(retryCount + 1);
+      }, 3000);
+    }
+  }, [status, retryCount, dispatch]);
   useEffect(() => {
     if (status === "idle") {
       dispatch(fetchCategories());
@@ -26,7 +48,12 @@ const CatalogCategories = () => {
   }
 
   if (status === "failed") {
-    return <div>Ошибка загрузки категорий.</div>;
+    return (
+      <div>
+        Ошибка загрузки категорий. Повторная попытка загрузки будет через 3
+        секунды.
+      </div>
+    );
   }
 
   const handleCategoryClick = (categoryId) => {
@@ -45,6 +72,12 @@ const CatalogCategories = () => {
           onClick={() => handleCategoryClick(category.id)}
         />
       ))}
+      {error && (
+        <div className='text-center'>
+          <p>Произошла ошибка при загрузке товаров: {error}</p>
+          <button onClick={handleRetry}>Повторить попытку</button>
+        </div>
+      )}
     </ul>
   );
 };

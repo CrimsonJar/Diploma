@@ -10,6 +10,7 @@ import {
   setShowTopSales,
   setSearchQuery,
 } from "../../Slice/itemsSlice";
+import { fetchCategories } from "../../Slice/categoriesSlice";
 import CatalogCategories from "./CatalogCategories";
 import SearchForm from "./SearchForm";
 import ProductsGrid from "./ProductsGrid";
@@ -32,11 +33,13 @@ const Catalog = () => {
     activeCategoryId,
     isInitialLoadCompleted,
   } = useSelector((state) => state.items);
+  const categoriesStatus = useSelector((state) => state.categories.status); // Статус загрузки категорий
+
   useEffect(() => {
     console.log("items", items);
   }, [items]);
+
   useEffect(() => {
-    // уст. showTopSales в false, если находимся на странице каталога
     if (location.pathname === "/catalog") {
       dispatch(setShowTopSales(false));
     }
@@ -45,18 +48,22 @@ const Catalog = () => {
   useEffect(() => {
     const queryFromURL = searchParams.get("search") || "";
     dispatch(setSearchQuery(queryFromURL));
+    dispatch(fetchCategories()); // Запускаем загрузку категорий
   }, [dispatch, searchParams]);
 
   useEffect(() => {
-    dispatch(resetItems());
-    dispatch(
-      fetchItems({
-        categoryId: Number(activeCategoryId) || 0,
-        offset: 0,
-        query: searchQuery,
-      })
-    );
-  }, [dispatch, activeCategoryId, searchQuery]);
+    // Загружаем товары только если категории были успешно загружены
+    if (categoriesStatus === "succeeded") {
+      dispatch(resetItems());
+      dispatch(
+        fetchItems({
+          categoryId: Number(activeCategoryId) || 0,
+          offset: 0,
+          query: searchQuery,
+        })
+      );
+    }
+  }, [dispatch, activeCategoryId, searchQuery, categoriesStatus]);
 
   const handleLoadMore = () => {
     dispatch(increaseOffset());
@@ -72,13 +79,15 @@ const Catalog = () => {
   const handleSearch = (query) => {
     dispatch(setSearchQuery(query));
     dispatch(resetItems());
-    dispatch(
-      fetchItems({
-        categoryId: activeCategoryId,
-        offset: 0,
-        query,
-      })
-    );
+    if (categoriesStatus === "succeeded") {
+      dispatch(
+        fetchItems({
+          categoryId: activeCategoryId,
+          offset: 0,
+          query,
+        })
+      );
+    }
   };
 
   return (
@@ -90,13 +99,14 @@ const Catalog = () => {
       <CatalogCategories />
       {isLoading ? (
         <Spinner />
-      ) : isInitialLoadCompleted && items.length === 0 ? ( // Проверяем, что начальная загрузка завершена
+      ) : isInitialLoadCompleted && items.length === 0 ? (
         <p className='text-center'>
           Товары не найдены. Попробуйте изменить запрос.
         </p>
       ) : (
         <ProductsGrid products={items} />
       )}
+
       {hasMoreItems && items.length > 0 && (
         <LoadMoreButton
           hasMoreItems={hasMoreItems}

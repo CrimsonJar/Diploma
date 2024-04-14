@@ -33,7 +33,6 @@ export const categoriesSlice = createSlice({
       })
       .addCase(fetchCategories.fulfilled, (state, action) => {
         state.status = "succeeded";
-        // Добавить элемент "Все" в начало списка категорий
         state.items = [{ id: 0, title: "Все" }, ...action.payload];
       })
       .addCase(fetchCategories.rejected, (state, action) => {
