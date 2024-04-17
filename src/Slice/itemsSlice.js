@@ -1,32 +1,19 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import axios from "axios";
 
 export const fetchItems = createAsyncThunk(
   "items/fetchItems",
   async ({ categoryId, offset, query = "" }, { getState, rejectWithValue }) => {
     const state = getState();
-    const limit = state.items.limit; // лимит загрузки элементов
+    const limit = state.items.limit;
     let url = `http://localhost:7070/api/items`;
-    const params = new URLSearchParams();
+    const params = new URLSearchParams({ categoryId, q: query, offset, limit });
 
-    if (categoryId && categoryId !== 0) {
-      params.append("categoryId", categoryId);
-    }
-
-    if (query) {
-      params.append("q", query);
-    }
-
-    params.append("offset", offset);
-    params.append("limit", limit);
     url += params.toString() ? `?${params}` : "";
 
     try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const data = await response.json();
-      return data;
+      const response = await axios.get(url);
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -34,14 +21,13 @@ export const fetchItems = createAsyncThunk(
   {
     condition: ({ categoryId, offset, query }, { getState }) => {
       const { items } = getState();
-      // Проверяем, загружены ли уже данные для данной категории и смещения
       const alreadyLoaded = items.items.some(
         (item) =>
           item.categoryId === categoryId &&
           item.offset === offset &&
           item.query === query
       );
-      return !alreadyLoaded; // Выполнять запрос только если данные еще не загружены
+      return !alreadyLoaded;
     },
   }
 );
@@ -49,39 +35,30 @@ export const fetchItems = createAsyncThunk(
 export const fetchItemsByCategory = createAsyncThunk(
   "items/fetchItemsByCategory",
   async (categoryId, { getState, rejectWithValue }) => {
-    const state = getState(); // Получаем текущее состояние
-    const limit = state.items.limit; // лимит загрузки элементов
+    const state = getState();
+    const limit = state.items.limit;
     let url = `http://localhost:7070/api/items`;
-    const params = new URLSearchParams();
-
-    if (categoryId && categoryId !== 0) {
-      params.append("categoryId", categoryId);
-    }
-
-    params.append("offset", 0);
-    params.append("limit", limit);
+    const params = new URLSearchParams({
+      ...(categoryId && categoryId !== 0 && { categoryId }),
+      offset: 0,
+      limit,
+    });
     url += `?${params}`;
 
     try {
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const data = await response.json();
-      return data;
+      const response = await axios.get(url);
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.message);
     }
   },
   {
     condition: (categoryId, { getState }) => {
-      const state = getState(); // Получаем текущее состояние
-      const { items } = state;
-      // Проверяем, загружены ли уже данные для данной категории
+      const { items } = getState();
       const alreadyLoaded = items.items.some(
         (item) => item.categoryId === categoryId
       );
-      return !alreadyLoaded; // Выполнять запрос только если данные еще не загружены
+      return !alreadyLoaded;
     },
   }
 );
@@ -97,7 +74,7 @@ const itemsSlice = createSlice({
     limit: 6,
     hasMoreItems: true,
     isInitialLoadCompleted: false,
-    activeCategoryId: null,
+    activeCategoryId: 0,
     showTopSales: true,
   },
   reducers: {

@@ -11,9 +11,12 @@ const TopSales = () => {
   const dispatch = useDispatch();
   const { items, status, error } = useSelector((state) => state.topSales);
   const [showModal, setShowModal] = useState(false);
+  const showTopSales = useSelector((state) => state.items.showTopSales);
 
   useEffect(() => {
-    dispatch(fetchTopSales());
+    if (showTopSales) {
+      dispatch(fetchTopSales());
+    }
   }, [dispatch]);
 
   useEffect(() => {
@@ -30,10 +33,6 @@ const TopSales = () => {
   if (status === "loading") {
     return <Spinner />;
   }
-
-  // if (status === "failed") {
-  //   return <div className='text-center text-danger mt-5'>Ошибка: {error}</div>;
-  // }
 
   return (
     <section className='top-sales'>

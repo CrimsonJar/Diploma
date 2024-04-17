@@ -1,17 +1,14 @@
 // Slice/topSalesSlice.js
-
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";
 
 export const fetchTopSales = createAsyncThunk(
   "topSales/fetchTopSales",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await fetch("http://localhost:7070/api/top-sales");
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const data = await response.json();
-      return data;
+      const response = await axios.get("http://localhost:7070/api/top-sales");
+
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.message);
     }

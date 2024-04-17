@@ -1,23 +1,22 @@
 // Slice/categoriesSlice.js
-
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";
 
 export const fetchCategories = createAsyncThunk(
   "categories/fetchCategories",
   async (_, { rejectWithValue }) => {
     try {
-      const response = await fetch("http://localhost:7070/api/categories");
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
+      const response = await axios.get("http://localhost:7070/api/categories");
+
+      if (response.status !== 200) {
+        throw new Error(`HTTP error: ${response.status}`);
       }
-      const data = await response.json();
-      return data;
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.message);
     }
   }
 );
-
 export const categoriesSlice = createSlice({
   name: "categories",
   initialState: {

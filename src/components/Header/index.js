@@ -1,6 +1,6 @@
 // index.js
 // header
-import React from "react";
+import React, { useEffect } from "react";
 import "../css/style.css";
 import headerLogo from "../img/header-logo.png";
 import Navigation from "./Navigation";

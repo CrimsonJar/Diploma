@@ -1,18 +1,15 @@
 // productSlice.js
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import axios from "axios";
 
 export const fetchProduct = createAsyncThunk(
   "product/fetchProduct",
   async (productId, { rejectWithValue }) => {
     try {
-      const response = await fetch(
+      const response = await axios.get(
         `http://localhost:7070/api/items/${productId}`
       );
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const data = await response.json();
-      return data;
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.message);
     }

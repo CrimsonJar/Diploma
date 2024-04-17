@@ -2,11 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCategories } from "../../Slice/categoriesSlice";
-import {
-  fetchItemsByCategory,
-  fetchItems,
-  setActiveCategory,
-} from "../../Slice/itemsSlice";
+import { fetchItems, setActiveCategory } from "../../Slice/itemsSlice";
 import CategoryItem from "./CategoryItem";
 import Spinner from "./Spinner";
 

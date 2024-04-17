@@ -125,6 +125,18 @@ router.post("/api/order", async (ctx, next) => {
   return fortune(ctx, null, 204);
 });
 
+// app.use(async (ctx, next) => {
+//   try {
+//     await next(); // Попытка выполнить следующий обработчик
+//   } catch (err) {
+//     ctx.status = err.statusCode || err.status || 500;
+//     ctx.body = { message: err.message };
+//     ctx.app.emit("error", err, ctx); // Эмитировать событие ошибки
+//     // Установить заголовки CORS вручную для ответа об ошибке
+//     ctx.set("Access-Control-Allow-Origin", "*");
+//     ctx.set("Access-Control-Allow-Methods", "GET,HEAD,PUT,POST,DELETE,PATCH");
+//   }
+// });
 app.use(router.routes());
 app.use(router.allowedMethods());
 

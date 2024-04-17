@@ -1,29 +1,26 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import axios from "axios";
 
 export const submitOrder = createAsyncThunk(
   "cart/submitOrder",
   async (orderData, { rejectWithValue }) => {
     try {
-      const response = await fetch("http://localhost:7070/api/order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(orderData),
-      });
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-
+      const response = await axios.post(
+        "http://localhost:7070/api/order",
+        orderData,
+        {
+          headers: { "Content-Type": "application/json" },
+        }
+      );
       if (response.status === 204) {
         return {};
-      } else {
-        return await response.json();
       }
+      return response.data;
     } catch (error) {
       return rejectWithValue(error.message);
     }
   }
 );
-
 const cartSlice = createSlice({
   name: "cart",
   initialState: {
@@ -67,17 +64,14 @@ const cartSlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(submitOrder.pending, (state) => {
-        console.log("pending", state);
         state.orderStatus = "pending";
       })
       .addCase(submitOrder.fulfilled, (state) => {
-        console.log("succeeded", state);
         state.orderStatus = "succeeded";
         state.items = [];
         localStorage.removeItem("cart");
       })
       .addCase(submitOrder.rejected, (state, action) => {
-        console.log("failed", state);
         state.orderStatus = "failed";
         state.orderError = action.payload;
       });

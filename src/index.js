@@ -8,6 +8,7 @@ import { Provider } from "react-redux";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "font-awesome/css/font-awesome.min.css";
 import "./components/css/style.css";
+import { setupAxiosInterceptors } from "./httpService";
 
 // ReactDOM.render(
 //   <React.StrictMode>
@@ -17,6 +18,9 @@ import "./components/css/style.css";
 //   </React.StrictMode>,
 //   document.getElementById("root")
 // );
+// index.js или App.js
+
+setupAxiosInterceptors();
 
 const container = document.getElementById("root");
 const root = createRoot(container); // создаем корень

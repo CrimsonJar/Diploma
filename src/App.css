@@ -1,8 +1,11 @@
 /* style.css */
 .card {
+  height: 500px;
   margin-bottom: 20px; /* Отступ между карточками */
 }
-
+.order-card {
+  height: 300px;
+}
 .card-body {
   min-height: 150px;
   /* height: 200px; */
@@ -28,40 +31,9 @@
   border-radius: 50px !important;
 }
 
-/* поле поиска  в хедере*/
-/* #search-form {
-  padding: 0 !important;
-}
-.form-control {
-  width: 100% !important;
-  border-radius: 50px !important;
-}
-
-.catalog-search-form.form-inline {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  flex-wrap: nowrap;
-  border-radius: 25%;
-}
-
-.form-control {
-  flex-grow: 1;
-  margin-right: 10px;
-}
-
-.search-button {
-  padding: 7px 20px;
-  border: 1px black solid;
-  background: #eee;
-  cursor: pointer;
-  margin-left: 10px;
-  border-radius: 0 20px 20px 0px;
-} */
-
 .cart,
 .order {
-  min-height: 300px;
+  min-height: 200px;
 }
 .success-message {
   text-align: center;

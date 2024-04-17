@@ -36,10 +36,6 @@ const Catalog = () => {
   const categoriesStatus = useSelector((state) => state.categories.status); // Статус загрузки категорий
 
   useEffect(() => {
-    console.log("items", items);
-  }, [items]);
-
-  useEffect(() => {
     if (location.pathname === "/catalog") {
       dispatch(setShowTopSales(false));
     }
@@ -48,7 +44,7 @@ const Catalog = () => {
   useEffect(() => {
     const queryFromURL = searchParams.get("search") || "";
     dispatch(setSearchQuery(queryFromURL));
-    dispatch(fetchCategories()); // Запускаем загрузку категорий
+    dispatch(fetchCategories());
   }, [dispatch, searchParams]);
 
   useEffect(() => {
@@ -97,22 +93,26 @@ const Catalog = () => {
         <SearchForm query={searchQuery} onSearch={handleSearch} />
       )}
       <CatalogCategories />
-      {isLoading ? (
-        <Spinner />
-      ) : isInitialLoadCompleted && items.length === 0 ? (
-        <p className='text-center'>
-          Товары не найдены. Попробуйте изменить запрос.
-        </p>
-      ) : (
-        <ProductsGrid products={items} />
-      )}
+      {categoriesStatus === "succeeded" && (
+        <>
+          {isLoading ? (
+            <Spinner />
+          ) : isInitialLoadCompleted && items.length === 0 ? (
+            <p className='text-center'>
+              Товары не найдены. Попробуйте изменить запрос.
+            </p>
+          ) : (
+            <ProductsGrid products={items} />
+          )}
 
-      {hasMoreItems && items.length > 0 && (
-        <LoadMoreButton
-          hasMoreItems={hasMoreItems}
-          loadMore={handleLoadMore}
-          isLoading={isLoading}
-        />
+          {hasMoreItems && items.length > 0 && (
+            <LoadMoreButton
+              hasMoreItems={hasMoreItems}
+              loadMore={handleLoadMore}
+              isLoading={isLoading}
+            />
+          )}
+        </>
       )}
     </section>
   );

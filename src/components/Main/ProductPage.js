@@ -10,8 +10,8 @@ const ProductPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+
   const { product, status, error } = useSelector((state) => state.product);
-  console.log("product", product);
   const [selectedSize, setSelectedSize] = useState(null);
   const [count, setcount] = useState(1);
 
@@ -19,6 +19,16 @@ const ProductPage = () => {
     dispatch(fetchProduct(id));
   }, [dispatch, id]);
 
+  useEffect(() => {
+    let timer;
+    if (status === "failed") {
+      timer = setTimeout(() => {
+        dispatch(fetchProduct(id));
+      }, 3000);
+    }
+    // Очистка таймера
+    return () => clearTimeout(timer);
+  }, [dispatch, id, status]);
   const handleSizeSelect = (size) => {
     setSelectedSize(size);
   };
@@ -41,8 +51,6 @@ const ProductPage = () => {
       };
       dispatch(addItemToCart(itemToAdd));
       navigate("/cart");
-    } else {
-      alert("Пожалуйста, выберите размер перед добавлением в корзину.");
     }
   };
 
@@ -51,7 +59,12 @@ const ProductPage = () => {
   }
 
   if (status === "failed") {
-    return <div>Error: {error}</div>;
+    return (
+      <div>
+        Ошибка загрузки продукта. Повторная попытка загрузки через 3 секунды.
+        <br />({error})
+      </div>
+    );
   }
 
   if (!product) {
